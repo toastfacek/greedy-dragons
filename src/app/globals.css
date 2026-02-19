@@ -1,0 +1,132 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+@import "tailwindcss";
+
+:root {
+  --bg-dark: #0d0a1a;
+  --bg-card: #1a1433;
+  --gold: #ffd700;
+  --gold-dark: #b8960c;
+  --gold-light: #fff4a3;
+  --purple: #6b21a8;
+  --purple-light: #9333ea;
+  --red: #dc2626;
+  --text: #e8e0f0;
+  --text-dim: #8b7fa8;
+}
+
+@theme inline {
+  --color-gold: var(--gold);
+  --color-gold-dark: var(--gold-dark);
+  --color-gold-light: var(--gold-light);
+  --color-bg-dark: var(--bg-dark);
+  --color-bg-card: var(--bg-card);
+  --color-dragon-purple: var(--purple);
+  --color-dragon-purple-light: var(--purple-light);
+  --color-text-main: var(--text);
+  --color-text-dim: var(--text-dim);
+  --font-pixel: 'Press Start 2P', monospace;
+}
+
+* {
+  image-rendering: pixelated;
+}
+
+body {
+  background: var(--bg-dark);
+  color: var(--text);
+  font-family: 'Press Start 2P', monospace;
+  min-height: 100vh;
+}
+
+/* Pixel border utility */
+.pixel-border {
+  box-shadow:
+    -4px 0 0 0 var(--gold-dark),
+    4px 0 0 0 var(--gold-dark),
+    0 -4px 0 0 var(--gold-dark),
+    0 4px 0 0 var(--gold-dark),
+    -4px -4px 0 0 var(--gold-dark),
+    4px -4px 0 0 var(--gold-dark),
+    -4px 4px 0 0 var(--gold-dark),
+    4px 4px 0 0 var(--gold-dark);
+}
+
+.pixel-border-gold {
+  box-shadow:
+    -4px 0 0 0 var(--gold),
+    4px 0 0 0 var(--gold),
+    0 -4px 0 0 var(--gold),
+    0 4px 0 0 var(--gold),
+    -4px -4px 0 0 var(--gold),
+    4px -4px 0 0 var(--gold),
+    -4px 4px 0 0 var(--gold),
+    4px 4px 0 0 var(--gold);
+}
+
+/* Gold shimmer animation */
+@keyframes shimmer {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes coinDrop {
+  0% { transform: translateY(-20px); opacity: 0; }
+  60% { transform: translateY(4px); opacity: 1; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes pulse-gold {
+  0%, 100% { text-shadow: 0 0 8px rgba(255, 215, 0, 0.5); }
+  50% { text-shadow: 0 0 20px rgba(255, 215, 0, 0.9), 0 0 40px rgba(255, 215, 0, 0.4); }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-coin-drop {
+  animation: coinDrop 0.5s ease-out forwards;
+}
+
+.animate-pulse-gold {
+  animation: pulse-gold 2s ease-in-out infinite;
+}
+
+/* Scanline overlay for retro CRT feel */
+.scanlines::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.1) 0px,
+    rgba(0, 0, 0, 0.1) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  z-index: 50;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--gold-dark);
+}
