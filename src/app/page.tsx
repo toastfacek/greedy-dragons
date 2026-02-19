@@ -6,6 +6,7 @@ interface Player {
   id: string;
   display_name: string;
   gold_count: number;
+  social_link?: string | null;
 }
 
 const DRAGON_ART = `
@@ -31,6 +32,10 @@ export default function Home() {
   const [quantity, setQuantity] = useState(1);
   const [showSuccess, setShowSuccess] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [editingSocialLink, setEditingSocialLink] = useState(false);
+  const [socialLinkInput, setSocialLinkInput] = useState("");
+  const [socialLinkLoading, setSocialLinkLoading] = useState(false);
+  const [socialLinkError, setSocialLinkError] = useState("");
 
   const fetchLeaderboard = useCallback(async () => {
     try {
@@ -134,6 +139,42 @@ export default function Home() {
     ? players.findIndex((p) => p.id === currentPlayer.id) + 1
     : null;
 
+  const isCurrentPlayerTop5 =
+    currentRank !== null && currentRank > 0 && currentRank <= 5;
+
+  const handleSaveSocialLink = async () => {
+    if (!currentPlayer) return;
+    setSocialLinkLoading(true);
+    setSocialLinkError("");
+
+    try {
+      const res = await fetch("/api/players/social-link", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          playerId: currentPlayer.id,
+          socialLink: socialLinkInput.trim(),
+        }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setSocialLinkError(data.error || "Failed to save link");
+        return;
+      }
+
+      if (data.player) {
+        setCurrentPlayer(data.player);
+      }
+      setEditingSocialLink(false);
+      fetchLeaderboard();
+    } catch {
+      setSocialLinkError("Failed to save link. Try again!");
+    } finally {
+      setSocialLinkLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center px-4 py-8 relative overflow-hidden">
       {/* Background fire particles */}
@@ -195,6 +236,60 @@ export default function Home() {
               RANK #{currentRank}
             </p>
           )}
+          {isCurrentPlayerTop5 && (
+            <div className="mt-3 pt-3 border-t border-gold-dark/30">
+              {editingSocialLink ? (
+                <div className="space-y-2">
+                  <input
+                    type="url"
+                    value={socialLinkInput}
+                    onChange={(e) => setSocialLinkInput(e.target.value)}
+                    onKeyDown={(e) =>
+                      e.key === "Enter" && handleSaveSocialLink()
+                    }
+                    placeholder="https://twitter.com/you"
+                    maxLength={512}
+                    className="w-full bg-bg-dark text-gold text-[8px] px-3 py-2 outline-none border-2 border-gold-dark focus:border-gold placeholder:text-text-dim/50 font-pixel"
+                  />
+                  {socialLinkError && (
+                    <p className="text-[7px] text-red-400">
+                      {socialLinkError}
+                    </p>
+                  )}
+                  <div className="flex gap-2 justify-center">
+                    <button
+                      onClick={handleSaveSocialLink}
+                      disabled={socialLinkLoading}
+                      className="text-[7px] px-3 py-1 bg-gold text-bg-dark hover:bg-gold-light disabled:opacity-50"
+                    >
+                      {socialLinkLoading ? "SAVING..." : "SAVE"}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditingSocialLink(false);
+                        setSocialLinkError("");
+                      }}
+                      className="text-[7px] px-3 py-1 bg-bg-dark text-text-dim hover:text-gold"
+                    >
+                      CANCEL
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => {
+                    setSocialLinkInput(currentPlayer?.social_link || "");
+                    setEditingSocialLink(true);
+                  }}
+                  className="text-[7px] text-text-dim hover:text-gold transition-colors"
+                >
+                  {currentPlayer?.social_link
+                    ? "EDIT SOCIAL LINK"
+                    : "ADD SOCIAL LINK"}
+                </button>
+              )}
+            </div>
+          )}
         </div>
       )}
 
@@ -210,20 +305,20 @@ export default function Home() {
               ◄
             </button>
             <div className="text-center">
-              <p className="text-3xl text-gold-light">{quantity}</p>
+              <p className="text-3xl text-gold-light">{quantity.toLocaleString()}</p>
               <p className="text-[8px] text-text-dim mt-1">
-                GOLD (${quantity}.00)
+                GOLD (${quantity.toLocaleString()}.00)
               </p>
             </div>
             <button
-              onClick={() => setQuantity(Math.min(100, quantity + 1))}
+              onClick={() => setQuantity(Math.min(10000, quantity + 1))}
               className="text-gold text-lg hover:text-gold-light active:scale-95 transition-transform"
             >
               ►
             </button>
           </div>
           <div className="flex justify-center gap-2 mb-4">
-            {[1, 5, 10, 25].map((n) => (
+            {[1, 25, 50, 100, 1000, 10000].map((n) => (
               <button
                 key={n}
                 onClick={() => setQuantity(n)}
@@ -291,6 +386,17 @@ export default function Home() {
                     >
                       🐉 {player.display_name}
                     </span>
+                    {i < 5 && player.social_link && (
+                      <a
+                        href={player.social_link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[8px] text-text-dim hover:text-gold transition-colors shrink-0"
+                        title={player.social_link}
+                      >
+                        🔗
+                      </a>
+                    )}
                   </div>
                   <span
                     className={`text-[10px] flex-shrink-0 ml-2 ${

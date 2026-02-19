@@ -6,7 +6,7 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from("players")
-    .select("id, display_name, gold_count")
+    .select("id, display_name, gold_count, social_link")
     .gt("gold_count", 0)
     .order("gold_count", { ascending: false })
     .limit(100);

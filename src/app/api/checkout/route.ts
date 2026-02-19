@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Player ID required" }, { status: 400 });
   }
 
-  const goldQuantity = Math.max(1, Math.min(100, Math.floor(quantity)));
+  const goldQuantity = Math.max(1, Math.min(10000, Math.floor(quantity)));
 
   // Verify the player exists
   const supabase = createServerClient();

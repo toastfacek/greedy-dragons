@@ -6,8 +6,10 @@ CREATE TABLE players (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   display_name TEXT NOT NULL,
   gold_count INTEGER NOT NULL DEFAULT 0,
+  social_link TEXT DEFAULT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT social_link_max_length CHECK (social_link IS NULL OR char_length(social_link) <= 512)
 );
 
 -- Transactions table (audit trail)
