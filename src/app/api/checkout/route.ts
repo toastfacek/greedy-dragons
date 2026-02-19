@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { createServerClient } from "@/lib/supabase";
+import { randomUUID } from "crypto";
+
+const isTestMode = !process.env.STRIPE_SECRET_KEY ||
+  process.env.STRIPE_SECRET_KEY === "sk_test_...";
 
 export async function POST(request: NextRequest) {
   const { playerId, quantity = 1 } = await request.json();
@@ -24,6 +28,48 @@ export async function POST(request: NextRequest) {
   }
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+  // Test mode: bypass Stripe and add gold directly
+  if (isTestMode) {
+    const sessionId = `test_session_${randomUUID()}`;
+
+    const { error: txError } = await supabase.from("transactions").insert({
+      player_id: playerId,
+      gold_amount: goldQuantity,
+      amount_cents: goldQuantity * 100,
+      stripe_session_id: sessionId,
+    });
+
+    if (txError) {
+      console.error("Failed to insert test transaction:", txError);
+      return NextResponse.json({ error: "Database error" }, { status: 500 });
+    }
+
+    const { error: updateError } = await supabase.rpc("increment_gold", {
+      p_player_id: playerId,
+      p_amount: goldQuantity,
+    });
+
+    if (updateError) {
+      const { data: currentPlayer } = await supabase
+        .from("players")
+        .select("gold_count")
+        .eq("id", playerId)
+        .single();
+
+      if (currentPlayer) {
+        await supabase
+          .from("players")
+          .update({
+            gold_count: currentPlayer.gold_count + goldQuantity,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", playerId);
+      }
+    }
+
+    return NextResponse.json({ url: `${appUrl}?success=true` });
+  }
 
   const session = await getStripe().checkout.sessions.create({
     payment_method_types: ["card"],
