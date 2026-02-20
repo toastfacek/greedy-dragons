@@ -86,7 +86,11 @@ export default function Home() {
         fetch(`/api/players?id=${playerId}`)
           .then((r) => r.json())
           .then((data) => {
-            if (data.player) setCurrentPlayer(data.player);
+            if (data.player) {
+              setCurrentPlayer(data.player);
+              setShowNameModal(false);
+              setLoading(false);
+            }
           });
       }
       setTimeout(() => setShowSuccess(false), 4000);
@@ -106,6 +110,8 @@ export default function Home() {
         localStorage.setItem("greedy_dragons_player_id", data.player.id);
         setCurrentPlayer(data.player);
         setShowNameModal(false);
+      } else {
+        alert(data.error || "Failed to create player. Try again!");
       }
     } catch {
       alert("Failed to create player. Try again!");
@@ -423,7 +429,7 @@ export default function Home() {
       </footer>
 
       {/* Name entry modal */}
-      {showNameModal && !loading && (
+      {showNameModal && !loading && !currentPlayer && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-40 p-4">
           <div className="pixel-border-gold bg-bg-card p-8 max-w-sm w-full text-center">
             <p className="text-4xl mb-4">🐉</p>
