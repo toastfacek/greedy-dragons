@@ -219,7 +219,7 @@ export default function Home() {
       )}
 
       {/* Header */}
-      <header className="text-center mb-8 mt-4">
+      <header className="text-center mb-6 mt-4">
         <pre className="text-gold text-[10px] leading-tight hidden sm:block mb-4 animate-pulse-gold select-none">
           {DRAGON_ART}
         </pre>
@@ -234,199 +234,207 @@ export default function Home() {
         </p>
       </header>
 
-      {/* Player status bar */}
-      {currentPlayer && !loading && (
-        <div className="pixel-border bg-bg-card px-6 py-4 mb-8 text-center w-full max-w-md">
-          <p className="text-[8px] text-text-dim mb-2">YOUR HOARD</p>
-          <p className="text-gold text-lg mb-1">
-            🐉 {currentPlayer.display_name}
-          </p>
-          <p className="text-gold-light text-2xl">
-            💰 {currentPlayer.gold_count}
-          </p>
-          {currentRank && currentRank > 0 && (
-            <p className="text-[8px] text-text-dim mt-2">
-              RANK #{currentRank}
-            </p>
-          )}
-          {isCurrentPlayerTop5 && (
-            <div className="mt-3 pt-3 border-t border-gold-dark/30">
-              {editingSocialLink ? (
-                <div className="space-y-2">
-                  <input
-                    type="url"
-                    value={socialLinkInput}
-                    onChange={(e) => setSocialLinkInput(e.target.value)}
-                    onKeyDown={(e) =>
-                      e.key === "Enter" && handleSaveSocialLink()
-                    }
-                    placeholder="https://twitter.com/you"
-                    maxLength={512}
-                    className="w-full bg-bg-dark text-gold text-[8px] px-3 py-2 outline-none border-2 border-gold-dark focus:border-gold placeholder:text-text-dim/50 font-pixel"
-                  />
-                  {socialLinkError && (
-                    <p className="text-[7px] text-red-400">
-                      {socialLinkError}
-                    </p>
-                  )}
-                  <div className="flex gap-2 justify-center">
-                    <button
-                      onClick={handleSaveSocialLink}
-                      disabled={socialLinkLoading}
-                      className="text-[7px] px-3 py-1 bg-gold text-bg-dark hover:bg-gold-light disabled:opacity-50"
+      {/* Two-column content wrapper */}
+      <div className="w-full max-w-5xl flex flex-col lg:flex-row lg:gap-8 gap-6 mb-8">
+        {/* Left column: Leaderboard (hero) */}
+        <div className="w-full lg:w-[62%] order-2 lg:order-1">
+          <div className="w-full pixel-border-gold bg-bg-card px-4 sm:px-6 py-6">
+            <h2 className="text-sm lg:text-base text-gold text-center mb-6">
+              ⚔️ LEADERBOARD ⚔️
+            </h2>
+            {players.length === 0 ? (
+              <p className="text-center text-text-dim text-[8px] py-8">
+                NO DRAGONS YET... BE THE FIRST TO HOARD!
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {players.map((player, i) => {
+                  const isCurrentPlayer = currentPlayer?.id === player.id;
+                  const medal = RANK_MEDALS[i];
+                  return (
+                    <div
+                      key={player.id}
+                      className={`flex items-center justify-between px-3 py-3 transition-colors ${
+                        isCurrentPlayer
+                          ? "bg-gold/10 border-l-4 border-gold"
+                          : i === 0
+                          ? "bg-gold/5"
+                          : "hover:bg-white/5"
+                      }`}
                     >
-                      {socialLinkLoading ? "SAVING..." : "SAVE"}
-                    </button>
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span
+                          className={`text-sm w-8 text-center flex-shrink-0 ${
+                            i === 0
+                              ? "text-gold text-lg"
+                              : i < 3
+                              ? "text-gold-dark"
+                              : "text-text-dim"
+                          }`}
+                        >
+                          {medal || `#${i + 1}`}
+                        </span>
+                        <span
+                          className={`text-[10px] truncate ${
+                            isCurrentPlayer ? "text-gold" : "text-text-main"
+                          }`}
+                        >
+                          🐉 {player.display_name}
+                        </span>
+                        {i < 5 && player.social_link && (
+                          <a
+                            href={player.social_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[8px] text-text-dim hover:text-gold transition-colors shrink-0"
+                            title={player.social_link}
+                          >
+                            🔗
+                          </a>
+                        )}
+                      </div>
+                      <span
+                        className={`text-[10px] flex-shrink-0 ml-2 ${
+                          i === 0
+                            ? "text-gold animate-shimmer"
+                            : i < 3
+                            ? "text-gold-dark"
+                            : "text-text-dim"
+                        }`}
+                      >
+                        💰 {player.gold_count.toLocaleString()}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right column: Player status + Buy gold (sidebar) */}
+        <div className="w-full lg:w-[38%] order-1 lg:order-2 flex flex-col gap-6 lg:sticky lg:top-8 lg:self-start">
+          {/* Player status bar */}
+          {currentPlayer && !loading && (
+            <div className="pixel-border bg-bg-card px-5 py-4 text-center w-full">
+              <p className="text-[8px] text-text-dim mb-2">YOUR HOARD</p>
+              <p className="text-gold text-lg mb-1">
+                🐉 {currentPlayer.display_name}
+              </p>
+              <p className="text-gold-light text-2xl">
+                💰 {currentPlayer.gold_count}
+              </p>
+              {currentRank && currentRank > 0 && (
+                <p className="text-[8px] text-text-dim mt-2">
+                  RANK #{currentRank}
+                </p>
+              )}
+              {isCurrentPlayerTop5 && (
+                <div className="mt-3 pt-3 border-t border-gold-dark/30">
+                  {editingSocialLink ? (
+                    <div className="space-y-2">
+                      <input
+                        type="url"
+                        value={socialLinkInput}
+                        onChange={(e) => setSocialLinkInput(e.target.value)}
+                        onKeyDown={(e) =>
+                          e.key === "Enter" && handleSaveSocialLink()
+                        }
+                        placeholder="https://twitter.com/you"
+                        maxLength={512}
+                        className="w-full bg-bg-dark text-gold text-[8px] px-3 py-2 outline-none border-2 border-gold-dark focus:border-gold placeholder:text-text-dim/50 font-pixel"
+                      />
+                      {socialLinkError && (
+                        <p className="text-[7px] text-red-400">
+                          {socialLinkError}
+                        </p>
+                      )}
+                      <div className="flex gap-2 justify-center">
+                        <button
+                          onClick={handleSaveSocialLink}
+                          disabled={socialLinkLoading}
+                          className="text-[7px] px-3 py-1 bg-gold text-bg-dark hover:bg-gold-light disabled:opacity-50"
+                        >
+                          {socialLinkLoading ? "SAVING..." : "SAVE"}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setEditingSocialLink(false);
+                            setSocialLinkError("");
+                          }}
+                          className="text-[7px] px-3 py-1 bg-bg-dark text-text-dim hover:text-gold"
+                        >
+                          CANCEL
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
                     <button
                       onClick={() => {
-                        setEditingSocialLink(false);
-                        setSocialLinkError("");
+                        setSocialLinkInput(currentPlayer?.social_link || "");
+                        setEditingSocialLink(true);
                       }}
-                      className="text-[7px] px-3 py-1 bg-bg-dark text-text-dim hover:text-gold"
+                      className="text-[7px] text-text-dim hover:text-gold transition-colors"
                     >
-                      CANCEL
+                      {currentPlayer?.social_link
+                        ? "EDIT SOCIAL LINK"
+                        : "ADD SOCIAL LINK"}
                     </button>
-                  </div>
+                  )}
                 </div>
-              ) : (
-                <button
-                  onClick={() => {
-                    setSocialLinkInput(currentPlayer?.social_link || "");
-                    setEditingSocialLink(true);
-                  }}
-                  className="text-[7px] text-text-dim hover:text-gold transition-colors"
-                >
-                  {currentPlayer?.social_link
-                    ? "EDIT SOCIAL LINK"
-                    : "ADD SOCIAL LINK"}
-                </button>
               )}
             </div>
           )}
-        </div>
-      )}
 
-      {/* Buy Gold section */}
-      {currentPlayer && !loading && (
-        <div className="pixel-border bg-bg-card px-6 py-6 mb-8 text-center w-full max-w-md">
-          <p className="text-[10px] text-gold mb-4">FEED YOUR GREED</p>
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <button
-              onClick={() => setQuantity(Math.max(1, quantity - 1))}
-              className="text-gold text-lg hover:text-gold-light active:scale-95 transition-transform"
-            >
-              ◄
-            </button>
-            <div className="text-center">
-              <p className="text-3xl text-gold-light">{quantity.toLocaleString()}</p>
-              <p className="text-[8px] text-text-dim mt-1">
-                GOLD (${quantity.toLocaleString()}.00)
-              </p>
-            </div>
-            <button
-              onClick={() => setQuantity(Math.min(10000, quantity + 1))}
-              className="text-gold text-lg hover:text-gold-light active:scale-95 transition-transform"
-            >
-              ►
-            </button>
-          </div>
-          <div className="flex justify-center gap-2 mb-4">
-            {[1, 25, 50, 100, 1000, 10000].map((n) => (
-              <button
-                key={n}
-                onClick={() => setQuantity(n)}
-                className={`text-[8px] px-3 py-2 transition-colors ${
-                  quantity === n
-                    ? "bg-gold text-bg-dark"
-                    : "bg-bg-dark text-gold hover:bg-gold/20"
-                }`}
-              >
-                {n}
-              </button>
-            ))}
-          </div>
-          <button
-            onClick={handleBuyGold}
-            disabled={buyLoading}
-            className="w-full bg-gold text-bg-dark py-4 text-sm hover:bg-gold-light active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed pixel-border-gold"
-          >
-            {buyLoading ? "OPENING CHEST..." : `BUY ${quantity} GOLD 💰`}
-          </button>
-        </div>
-      )}
-
-      {/* Leaderboard */}
-      <div className="w-full max-w-lg pixel-border bg-bg-card px-4 sm:px-6 py-6 mb-8">
-        <h2 className="text-sm text-gold text-center mb-6">
-          ⚔️ LEADERBOARD ⚔️
-        </h2>
-        {players.length === 0 ? (
-          <p className="text-center text-text-dim text-[8px] py-8">
-            NO DRAGONS YET... BE THE FIRST TO HOARD!
-          </p>
-        ) : (
-          <div className="space-y-2">
-            {players.map((player, i) => {
-              const isCurrentPlayer = currentPlayer?.id === player.id;
-              const medal = RANK_MEDALS[i];
-              return (
-                <div
-                  key={player.id}
-                  className={`flex items-center justify-between px-3 py-3 transition-colors ${
-                    isCurrentPlayer
-                      ? "bg-gold/10 border-l-4 border-gold"
-                      : i === 0
-                      ? "bg-gold/5"
-                      : "hover:bg-white/5"
-                  }`}
+          {/* Buy Gold section */}
+          {currentPlayer && !loading && (
+            <div className="pixel-border bg-bg-card px-5 py-5 text-center w-full">
+              <p className="text-[10px] text-gold mb-4">FEED YOUR GREED</p>
+              <div className="flex items-center justify-center gap-4 mb-4">
+                <button
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="text-gold text-lg hover:text-gold-light active:scale-95 transition-transform"
                 >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span
-                      className={`text-sm w-8 text-center flex-shrink-0 ${
-                        i === 0
-                          ? "text-gold text-lg"
-                          : i < 3
-                          ? "text-gold-dark"
-                          : "text-text-dim"
-                      }`}
-                    >
-                      {medal || `#${i + 1}`}
-                    </span>
-                    <span
-                      className={`text-[10px] truncate ${
-                        isCurrentPlayer ? "text-gold" : "text-text-main"
-                      }`}
-                    >
-                      🐉 {player.display_name}
-                    </span>
-                    {i < 5 && player.social_link && (
-                      <a
-                        href={player.social_link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[8px] text-text-dim hover:text-gold transition-colors shrink-0"
-                        title={player.social_link}
-                      >
-                        🔗
-                      </a>
-                    )}
-                  </div>
-                  <span
-                    className={`text-[10px] flex-shrink-0 ml-2 ${
-                      i === 0
-                        ? "text-gold animate-shimmer"
-                        : i < 3
-                        ? "text-gold-dark"
-                        : "text-text-dim"
+                  ◄
+                </button>
+                <div className="text-center">
+                  <p className="text-2xl text-gold-light">{quantity.toLocaleString()}</p>
+                  <p className="text-[8px] text-text-dim mt-1">
+                    GOLD (${quantity.toLocaleString()}.00)
+                  </p>
+                </div>
+                <button
+                  onClick={() => setQuantity(Math.min(10000, quantity + 1))}
+                  className="text-gold text-lg hover:text-gold-light active:scale-95 transition-transform"
+                >
+                  ►
+                </button>
+              </div>
+              <div className="flex flex-wrap justify-center gap-2 mb-4">
+                {[1, 25, 50, 100, 1000, 10000].map((n) => (
+                  <button
+                    key={n}
+                    onClick={() => setQuantity(n)}
+                    className={`text-[8px] px-3 py-2 transition-colors ${
+                      quantity === n
+                        ? "bg-gold text-bg-dark"
+                        : "bg-bg-dark text-gold hover:bg-gold/20"
                     }`}
                   >
-                    💰 {player.gold_count.toLocaleString()}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        )}
+                    {n}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={handleBuyGold}
+                disabled={buyLoading}
+                className="w-full bg-gold text-bg-dark py-4 text-sm hover:bg-gold-light active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed pixel-border-gold"
+              >
+                {buyLoading ? "OPENING CHEST..." : `BUY ${quantity} GOLD 💰`}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Footer */}
