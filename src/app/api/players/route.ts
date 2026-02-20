@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (error) {
+    console.error("Failed to create player:", error);
     return NextResponse.json({ error: "Failed to create player" }, { status: 500 });
   }
 

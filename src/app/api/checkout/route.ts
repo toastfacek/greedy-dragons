@@ -68,7 +68,14 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ url: `${appUrl}?success=true` });
+    // Return updated player data directly (no redirect needed in test mode)
+    const { data: updatedPlayer } = await supabase
+      .from("players")
+      .select("*")
+      .eq("id", playerId)
+      .single();
+
+    return NextResponse.json({ success: true, player: updatedPlayer });
   }
 
   const session = await getStripe().checkout.sessions.create({

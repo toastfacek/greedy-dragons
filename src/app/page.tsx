@@ -132,7 +132,14 @@ export default function Home() {
       });
       const data = await res.json();
       if (data.url) {
+        // Production Stripe: redirect to checkout page
         window.location.href = data.url;
+      } else if (data.success && data.player) {
+        // Test mode: update UI in-place, no redirect needed
+        setCurrentPlayer(data.player);
+        setShowSuccess(true);
+        fetchLeaderboard();
+        setTimeout(() => setShowSuccess(false), 4000);
       }
     } catch {
       alert("Failed to start checkout. Try again!");
